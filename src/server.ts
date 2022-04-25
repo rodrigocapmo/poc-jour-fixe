@@ -1,4 +1,4 @@
-import { AgendaItemType, MeetingSeries } from "./types";
+import { AgendaItemType, MeetingSeries, TalkingPointTicket } from "./types";
 import Chance from "chance";
 
 const chance = new Chance();
@@ -11,7 +11,7 @@ const getParticipant = () => ({
   role: chance.profession(),
 });
 
-const getTicket = () => ({
+export const getTicket = () => ({
   id: chance.guid(),
   ticketKey: `PD-${chance.integer()}`,
   name: chance.sentence(),
@@ -32,17 +32,22 @@ const tickets = [
   getTicket(),
 ];
 
-const ticketsId = tickets.map((ticket) => ticket.id);
-
-const getAgendaItem = (ticketsId: string[]) => ({
-  id: chance.guid(),
-  isDone: chance.bool(),
-  linkedTickets: chance.pickset(ticketsId),
-  note: chance.paragraph(),
-  text: chance.sentence(),
-  title: chance.sentence(),
-  type: AgendaItemType.TalkingPoint,
-});
+const getAgendaItem = (tickets: TalkingPointTicket[]) => {
+  const selectedTickets = chance.pickset(
+    tickets,
+    chance.integer({ min: 1, max: tickets.length - 1 })
+  );
+  return {
+    id: chance.guid(),
+    isDone: chance.bool(),
+    linkedTickets: selectedTickets.map((t) => t.id),
+    tickets: selectedTickets,
+    note: chance.paragraph(),
+    text: chance.sentence({ words: 3 }),
+    title: chance.sentence({ words: 3 }),
+    type: AgendaItemType.TalkingPoint,
+  };
+};
 
 const series: MeetingSeries = {
   name: chance.sentence(),
@@ -55,9 +60,9 @@ const series: MeetingSeries = {
       sentAt: null,
       meetingDateTime: chance.date(),
       agendaItems: [
-        getAgendaItem(ticketsId),
-        getAgendaItem(ticketsId),
-        getAgendaItem(ticketsId),
+        getAgendaItem(tickets),
+        getAgendaItem(tickets),
+        getAgendaItem(tickets),
       ],
       participants: [
         getParticipant(),

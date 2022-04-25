@@ -30,6 +30,7 @@ export interface TalkingPoint {
   // createdAt: string;
   isDone: boolean;
   linkedTickets: Array<string>;
+  tickets: Array<TalkingPointTicket>;
   type: AgendaItemType;
 }
 
@@ -37,7 +38,7 @@ export interface TalkingPointTicket {
   id: string;
   ticketKey: string;
   name: string;
-  dueDate: string;
+  dueDate: Date;
   company: string;
   responsible: string;
 }
