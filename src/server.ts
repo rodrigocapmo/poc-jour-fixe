@@ -1,4 +1,9 @@
-import { AgendaItemType, MeetingSeries, TalkingPointTicket } from "./types";
+import {
+  AgendaItemType,
+  MeetingSeries,
+  TalkingPoint,
+  TalkingPointTicket,
+} from "./types";
 import Chance from "chance";
 
 const chance = new Chance();
@@ -78,5 +83,15 @@ const series: MeetingSeries = {
 export const getSeries = () => {
   return new Promise<MeetingSeries>((resolve) =>
     setTimeout(() => resolve(series), 3000)
+  );
+};
+
+export const saveTalkingPoint = (talkingPoint: TalkingPoint) => {
+  console.log(`saving talking point ${talkingPoint.text}`);
+  return new Promise<TalkingPoint>((resolve, reject) =>
+    setTimeout(() => {
+      console.log(`talking point saved - ${talkingPoint.text}`);
+      resolve(talkingPoint);
+    }, 1000)
   );
 };
