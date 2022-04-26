@@ -35,7 +35,7 @@ const tickets = [
 const getAgendaItem = (tickets: TalkingPointTicket[]) => {
   const selectedTickets = chance.pickset(
     tickets,
-    chance.integer({ min: 1, max: tickets.length - 1 })
+    chance.integer({ min: 0, max: tickets.length - 1 })
   );
   return {
     id: chance.guid(),

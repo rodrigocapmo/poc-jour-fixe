@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { getSeries } from "./server";
 import { Header } from "./components/Header";
 import { TalkingPointForm } from "./components/TalkingPointForm";
+import { TalkingPointTickets } from "./components/TalkingPointTickets";
 
 function App() {
   const [series, setSeries] = useState<MeetingSeries>();
@@ -34,6 +35,18 @@ function App() {
     updateMeeting({
       ...currentMeeting,
       agendaItems,
+    });
+  };
+
+  const updateTalkingPointGeneralData = (talkingPoint: TalkingPoint) => {
+    const { linkedTickets, tickets } = currentMeeting.agendaItems.find(
+      (item) => talkingPoint.id === item.id
+    ) as TalkingPoint;
+
+    updateTalkingPoint({
+      ...talkingPoint,
+      linkedTickets,
+      tickets,
     });
   };
 
@@ -84,16 +97,21 @@ function App() {
       <Header title={series.name} date={series.date} onEdit={() => {}} />
       <h3>Agenda Items</h3>
       {currentMeeting.agendaItems.map((item) => (
+        // move > talkingpoint form > tickets
         <TalkingPointForm
           key={item.id}
           talkingPoint={item as TalkingPoint}
-          onSubmit={updateTalkingPoint}
+          onSubmit={updateTalkingPointGeneralData}
           onMove={moveTalkingPoint}
-          onLinkTicket={(ticket) => linkTicket(item as TalkingPoint, ticket)}
-          onUnlinkTicket={(ticket) =>
-            unlinkTicket(item as TalkingPoint, ticket)
-          }
-        />
+        >
+          <TalkingPointTickets
+            tickets={(item as TalkingPoint).tickets}
+            onLinkTicket={(ticket) => linkTicket(item as TalkingPoint, ticket)}
+            onUnlinkTicket={(ticket) =>
+              unlinkTicket(item as TalkingPoint, ticket)
+            }
+          />
+        </TalkingPointForm>
       ))}
     </div>
   );
