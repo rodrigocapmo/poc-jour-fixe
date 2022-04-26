@@ -6,16 +6,14 @@ interface TalkingPointProps {
   talkingPoint: TalkingPoint;
   children: React.ReactElement;
   onSubmit(talkingPoint: TalkingPoint): void;
-  onMove(talkingPoint: TalkingPoint, position: number): void;
 }
 
 export const TalkingPointForm = ({
   talkingPoint,
   children,
-  onMove,
   onSubmit,
 }: TalkingPointProps) => {
-  const [shouldShowMore, setShowMore] = useState(false); // Spliting state from data
+  const [shouldShowMore, setShowMore] = useState(false); // Spliting state from data. Also solve problems with state sync.
   const toggleShowMore = useCallback(
     () => setShowMore((isShowingMore) => !isShowingMore),
     []
@@ -33,6 +31,7 @@ export const TalkingPointForm = ({
         style={{
           display: "flex",
           flexDirection: "column",
+          background: "white",
           gap: "10px",
           border: "1px solid red",
           padding: "1em",
@@ -42,9 +41,6 @@ export const TalkingPointForm = ({
       >
         <div>
           <button type="submit">Save</button>
-          <button type="button" onClick={() => onMove(talkingPoint, 0)}>
-            Move Top
-          </button>
         </div>
         <Field
           style={{ width: 20, height: 20 }}
@@ -53,7 +49,7 @@ export const TalkingPointForm = ({
         />
         <label>Title</label>
         <Field name="talkingPoint.text" />
-        "Saved" data - {talkingPoint.text}
+        "Saved" data, should only update when you save it - {talkingPoint.text}
         {hasShowMoreButton && (
           <button type="button" onClick={toggleShowMore}>
             {shouldShowMore ? "Show less" : "Show more"}
