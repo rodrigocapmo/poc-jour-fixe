@@ -10,6 +10,11 @@ import { getSeries } from "./server";
 import { Header } from "./components/Header";
 import { TalkingPointForm } from "./components/TalkingPointForm";
 import { TalkingPointTickets } from "./components/TalkingPointTickets";
+import { Draggable } from "./components/Draggable";
+
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
+import { Droppable } from "./components/Droppable";
 
 function App() {
   const [series, setSeries] = useState<MeetingSeries>();
@@ -93,27 +98,39 @@ function App() {
   if (!series) return <span>This is loading</span>;
 
   return (
-    <div className="App">
-      <Header title={series.name} date={series.date} onEdit={() => {}} />
-      <h3>Agenda Items</h3>
-      {currentMeeting.agendaItems.map((item) => (
-        // move > talkingpoint form > tickets
-        <TalkingPointForm
-          key={item.id}
-          talkingPoint={item as TalkingPoint}
-          onSubmit={updateTalkingPointGeneralData}
-          onMove={moveTalkingPoint}
-        >
-          <TalkingPointTickets
-            tickets={(item as TalkingPoint).tickets}
-            onLinkTicket={(ticket) => linkTicket(item as TalkingPoint, ticket)}
-            onUnlinkTicket={(ticket) =>
-              unlinkTicket(item as TalkingPoint, ticket)
-            }
-          />
-        </TalkingPointForm>
-      ))}
-    </div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="App">
+        <Header title={series.name} date={series.date} onEdit={() => {}} />
+        <h3>Agenda Items</h3>
+        {currentMeeting.agendaItems.map((item, index) => (
+          <div key={item.id}>
+            <Droppable type="item" index={index}>
+              <Draggable
+                type="item"
+                talkingPoint={item as TalkingPoint}
+                onMove={moveTalkingPoint}
+              >
+                <TalkingPointForm
+                  talkingPoint={item as TalkingPoint}
+                  onSubmit={updateTalkingPointGeneralData}
+                  onMove={moveTalkingPoint}
+                >
+                  <TalkingPointTickets
+                    tickets={(item as TalkingPoint).tickets}
+                    onLinkTicket={(ticket) =>
+                      linkTicket(item as TalkingPoint, ticket)
+                    }
+                    onUnlinkTicket={(ticket) =>
+                      unlinkTicket(item as TalkingPoint, ticket)
+                    }
+                  />
+                </TalkingPointForm>
+              </Draggable>
+            </Droppable>
+          </div>
+        ))}
+      </div>
+    </DndProvider>
   );
 }
 
