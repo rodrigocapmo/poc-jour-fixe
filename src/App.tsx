@@ -21,7 +21,7 @@ function App() {
     unlinkTicket,
   } = useMeeting();
 
-  if (!series) return <span>This is loading</span>;
+  if (!series || !currentMeeting) return <span>This is loading</span>;
 
   return (
     <DndProvider backend={HTML5Backend}>
