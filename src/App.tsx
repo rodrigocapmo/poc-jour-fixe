@@ -15,20 +15,24 @@ function App() {
   const {
     series,
     currentMeeting,
+    status,
     moveTalkingPoint,
     updateTalkingPointGeneralData,
     linkTicket,
     unlinkTicket,
   } = useMeeting();
 
-  if (!series || !currentMeeting) return <span>This is loading</span>;
+  if (status === "idle") return <span>It will start fetching</span>;
+  if (status === "loading") return <span>Loading data</span>;
+  if (status === "failed")
+    return <span style={{ color: "red" }}>The server exploded</span>;
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="App">
         <Header title={series.name} date={series.date} onEdit={() => {}} />
         <h3>Agenda Items</h3>
-        {currentMeeting.agendaItems.map((item, index) => (
+        {currentMeeting!.agendaItems.map((item, index) => (
           // I won't bother preparing the same for sections, you get the idea.
           // I am using id as keys because they are stable and now we have this during creation
           <Droppable type="item" key={item.id} index={index}>

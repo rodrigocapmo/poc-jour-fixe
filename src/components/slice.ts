@@ -4,15 +4,17 @@ import {
   TalkingPoint,
   TalkingPointTicket,
 } from "../types";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { series } from "../server";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { getSeries, series } from "../server";
 
 interface State {
+  status: "idle" | "loading" | "success" | "failed";
   series: MeetingSeries | null;
   currentMeeting: string | null;
 }
 
 const initialState: State = {
+  status: "idle",
   series,
   currentMeeting: null,
 };
@@ -29,6 +31,15 @@ export const selectAgendaItem = (state: State, id: string) => {
   const currentMeeting = selectCurrentMeeting(state);
   return currentMeeting?.agendaItems.find((item) => item.id === id);
 };
+
+// this will deal with all the state logic of our request, we just need to listen to specifc events
+export const loadSeries = createAsyncThunk(
+  "meetingSeries/loadSeries",
+  async () => {
+    const series = await getSeries();
+    return series;
+  }
+);
 
 // New way to deal with slices. Way less code and more simple to understand
 // the state injected can be mutated as you want and it will work like magic
@@ -104,6 +115,20 @@ const meetingSeriesSlice = createSlice({
 
       currentMeeting!.agendaItems = agendaItems;
     },
+  },
+  extraReducers(builder) {
+    // Updating status based on the state of the request
+    builder
+      .addCase(loadSeries.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(loadSeries.fulfilled, (state, action) => {
+        state.status = "success";
+        state.series = action.payload;
+      })
+      .addCase(loadSeries.rejected, (state) => {
+        state.status = "failed";
+      });
   },
 });
 

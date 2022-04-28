@@ -1,22 +1,20 @@
 import { TalkingPoint, TalkingPointTicket } from "../types";
 import { useEffect } from "react";
-import { getSeries } from "../server";
 import { useDispatch, useSelector } from "react-redux";
-import { actions, selectCurrentMeeting, selectSeries } from "./slice";
+import { actions, selectCurrentMeeting, loadSeries } from "./slice";
 
 export function useMeeting() {
   const series = useSelector((data: any) => data.meeting.series);
   const currentMeeting = useSelector((data: any) =>
     selectCurrentMeeting(data.meeting)
   );
+  const status = useSelector((data: any) => data.meeting.status);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!series)
-      // consider getSeries an apollo query
-      getSeries().then((series) => dispatch(actions.setSeries(series)));
+    if (status === "idle") dispatch(loadSeries() as any); // dependency conflict, I won't spend time fixing it
     // We don't refetch, after the initial load we only rely on state updates
-  }, [series, dispatch]);
+  }, [status, dispatch]);
 
   const updateTalkingPointGeneralData = (talkingPoint: TalkingPoint) =>
     dispatch(actions.updateTalkingPointGeneralData(talkingPoint));
@@ -51,6 +49,7 @@ export function useMeeting() {
   return {
     currentMeeting,
     series,
+    status,
 
     // On each of this methods we can trigger mutations to the backend
     updateTalkingPointGeneralData,
