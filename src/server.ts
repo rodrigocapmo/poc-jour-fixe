@@ -20,7 +20,7 @@ export const getTicket = () => ({
   id: chance.guid(),
   ticketKey: `PD-${chance.integer()}`,
   name: chance.sentence(),
-  dueDate: chance.date(),
+  dueDate: chance.date().toISOString(),
   company: chance.company(),
   responsible: chance.name(),
 });
@@ -54,16 +54,16 @@ const getAgendaItem = (tickets: TalkingPointTicket[]) => {
   };
 };
 
-const series: MeetingSeries = {
+export const series: MeetingSeries = {
   name: chance.sentence(),
-  date: chance.date({ min: new Date() }) as Date,
+  date: (chance.date({ min: new Date() }) as Date).toISOString(),
   projectId: chance.guid(),
   meetings: [
     {
       id: chance.guid(),
       title: chance.sentence(),
       sentAt: null,
-      meetingDateTime: chance.date(),
+      meetingDateTime: chance.date().toISOString(),
       agendaItems: [
         getAgendaItem(tickets),
         getAgendaItem(tickets),

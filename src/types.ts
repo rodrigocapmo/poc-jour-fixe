@@ -3,7 +3,7 @@ export interface MeetingSeries {
   // createdBy: string;
   name: string;
   // frequency: object;
-  date: Date;
+  date: Date | string;
   meetings: Array<Meeting>;
   // serverCreatedAt: string;
   // serverUpdatedAt: string;
@@ -14,7 +14,7 @@ export interface Meeting {
   // createdBy: string;
   // updatedBy: string;
   title: string;
-  meetingDateTime: Date;
+  meetingDateTime: Date | string;
   sentAt: Date | null;
   participants: Array<Participant>;
   // protocolRecipients: Array<string>;
@@ -38,7 +38,7 @@ export interface TalkingPointTicket {
   id: string;
   ticketKey: string;
   name: string;
-  dueDate: Date;
+  dueDate: Date | string;
   company: string;
   responsible: string;
 }

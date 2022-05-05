@@ -1,105 +1,55 @@
-import {
-  Meeting,
-  MeetingSeries,
-  TalkingPoint,
-  TalkingPointTicket,
-} from "../types";
-import { useEffect, useState } from "react";
-import { getSeries, saveTalkingPoint } from "../server";
+import { TalkingPoint, TalkingPointTicket } from "../types";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { actions, selectCurrentMeeting, loadSeries } from "./slice";
 
 export function useMeeting() {
-  const [series, setSeries] = useState<MeetingSeries>();
-  const [currentMeeting] = series?.meetings || [];
+  const series = useSelector((data: any) => data.meeting.series);
+  const currentMeeting = useSelector((data: any) =>
+    selectCurrentMeeting(data.meeting)
+  );
+  const status = useSelector((data: any) => data.meeting.status);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    // consider getSeries an apollo query
-    getSeries().then(setSeries);
+    if (status === "idle") dispatch(loadSeries() as any); // dependency conflict, I won't spend time fixing it
     // We don't refetch, after the initial load we only rely on state updates
-  }, []);
+  }, [status, dispatch]);
 
-  const updateMeeting = (updatedMeeting: Meeting) => {
-    const meetings = series!.meetings!.map((meeting) =>
-      meeting.id === meeting.id ? updatedMeeting : meeting
+  const updateTalkingPointGeneralData = (talkingPoint: TalkingPoint) =>
+    dispatch(actions.updateTalkingPointGeneralData(talkingPoint));
+
+  const linkTicket = (talkingPoint: TalkingPoint, ticket: TalkingPointTicket) =>
+    dispatch(
+      actions.linkTicket({
+        talkingPointId: talkingPoint.id,
+        ticket,
+      })
     );
-
-    setSeries({ ...series!, meetings });
-  };
-
-  const updateTalkingPoint = (talkingPoint: TalkingPoint) => {
-    const agendaItems = currentMeeting.agendaItems.map((item) =>
-      talkingPoint.id === item.id ? talkingPoint : item
-    );
-
-    updateMeeting({
-      ...currentMeeting,
-      agendaItems,
-    });
-
-    /*
-      If this fails we have some options:
-      - block the item until the transaction is finished (super bad in my opinion)
-      - undo data and ask user to perform action again (super bad in my opinion)
-      - retry the same request until it works and cancel if same item receives an update (apollo has some ways to handle this)
-      - send the full meeting to the backend. it will fix all inconsistencies, since the ui now has the stable data about the meeting.
-    */
-    saveTalkingPoint(talkingPoint);
-  };
-
-  const updateTalkingPointGeneralData = (talkingPoint: TalkingPoint) => {
-    const { linkedTickets, tickets } = currentMeeting.agendaItems.find(
-      (item) => talkingPoint.id === item.id
-    ) as TalkingPoint;
-
-    updateTalkingPoint({
-      ...talkingPoint,
-      linkedTickets,
-      tickets,
-    });
-  };
-
-  const linkTicket = (
-    talkingPoint: TalkingPoint,
-    ticket: TalkingPointTicket
-  ) => {
-    updateTalkingPoint({
-      ...talkingPoint,
-      linkedTickets: [...talkingPoint.linkedTickets, ticket.id],
-      tickets: [...talkingPoint.tickets, ticket],
-    });
-  };
 
   const unlinkTicket = (
     talkingPoint: TalkingPoint,
     ticket: TalkingPointTicket
-  ) => {
-    updateTalkingPoint({
-      ...talkingPoint,
-      linkedTickets: talkingPoint.linkedTickets.filter(
-        (id) => id !== ticket.id
-      ),
-      tickets: talkingPoint.tickets.filter(({ id }) => id !== ticket.id),
-    });
-  };
-
-  const moveTalkingPoint = (
-    talkingPoint: TalkingPoint,
-    newPosition: number
-  ) => {
-    const agendaItems = currentMeeting.agendaItems.filter(
-      (item) => talkingPoint.id !== item.id
+  ) =>
+    dispatch(
+      actions.unlinkTicket({
+        talkingPointId: talkingPoint.id,
+        ticketId: ticket.id,
+      })
     );
 
-    agendaItems.splice(newPosition, 0, talkingPoint); // yeah, I know. Just ignore this.
-
-    updateMeeting({
-      ...currentMeeting,
-      agendaItems,
-    });
-  };
+  const moveTalkingPoint = (talkingPoint: TalkingPoint, newPosition: number) =>
+    dispatch(
+      actions.moveTalkingPoint({
+        newPosition,
+        id: talkingPoint.id,
+      })
+    );
 
   return {
     currentMeeting,
     series,
+    status,
 
     // On each of this methods we can trigger mutations to the backend
     updateTalkingPointGeneralData,
